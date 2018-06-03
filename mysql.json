@@ -1,0 +1,55 @@
+{
+  "builders": [{
+    "type": "azure-arm",
+
+    "client_id": "e751bfb3-0d62-424b-b879-688465daff37",
+    "client_secret": "48ce0539-1ddc-4efa-81d9-ccfddc4307c1",
+    "tenant_id": "a1299414-ffb5-4f7e-91bb-d630aee37f87",
+    "subscription_id": "75f087ab-6d74-487a-b450-ae8b96558762",
+
+    "managed_image_resource_group_name": "myResourceGroup",
+    "managed_image_name": "Packer_Image_MySQL",
+
+    "os_type": "Linux",
+    "image_publisher": "Canonical",
+    "image_offer": "UbuntuServer",
+    "image_sku": "16.04-LTS",
+
+    "azure_tags": {
+        "dept": "DevOps",
+        "task": "Docker"
+    },
+
+    "location": "West Europe",
+    "vm_size": "Standard_DS2_v2"
+  }],
+  "provisioners": [
+  {
+    "execute_command": "chmod +x {{ .Path }}; {{ .Vars }} sudo -E sh '{{ .Path }}'",
+    "inline": [
+      "sudo apt-get update -y",
+      "sudo apt-get install -y git software-properties-common",
+      "sudo add-apt-repository ppa:ansible/ansible -y",
+      "sudo apt-get update -y",
+      "sudo apt-get install ansible -y"
+    ],
+    "inline_shebang": "/bin/sh -x",
+    "skip_clean": "true",
+    "type": "shell"
+    },
+    {
+    "type": "ansible-local",
+    "command": "ansible-playbook",
+    "playbook_file": "rancher/mysql/mysql.yml"
+    },
+    {
+    "execute_command": "chmod +x {{ .Path }}; {{ .Vars }} sudo -E sh '{{ .Path }}'",
+    "inline": [
+      "/usr/sbin/waagent -force -deprovision+user && export HISTSIZE=0 && sync"
+    ],
+    "inline_shebang": "/bin/sh -x",
+    "skip_clean": "true",
+    "type": "shell"
+    }
+    ]
+}
